@@ -1,0 +1,28 @@
+---
+- name: Create grafana provisioning directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /etc/grafana/provisioning/datasources
+    - /etc/grafana/provisioning/dashboards
+  become: true
+
+- name: Deploy Prometheus datasource provisioning
+  template:
+    src: datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+  become: true
+
+- name: Run Grafana container
+  community.docker.docker_container:
+    name: grafana
+    image: grafana/grafana:{{ grafana_version }}
+    state: started
+    restart_policy: always
+    volumes:
+      - /etc/grafana/provisioning:/etc/grafana/provisioning
+    published_ports:
+      - "3000:3000"
+  become: true
