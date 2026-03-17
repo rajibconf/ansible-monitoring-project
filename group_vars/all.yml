@@ -1,0 +1,10 @@
+---
+# Global variables for the monitoring stack
+prometheus_version: "v2.47.0"
+node_exporter_version: "1.7.0"
+grafana_version: "latest"
+alert_email: "admin@example.com"
+
+# Default hosts (can be overridden in inventory or group_vars)
+prometheus_host: "localhost"
+elasticsearch_host: "localhost"
