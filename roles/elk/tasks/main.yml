@@ -1,0 +1,43 @@
+---
+- name: Add Elastic repo key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  become: true
+
+- name: Add repo
+  apt_repository:
+    repo: 'deb https://artifacts.elastic.co/packages/8.x/apt stable main'
+  become: true
+
+- name: Install Elasticsearch + Kibana + Filebeat
+  apt:
+    name:
+      - elasticsearch
+      - kibana
+      - filebeat
+    state: present
+  become: true
+
+- name: Configure Elasticsearch (single-node)
+  lineinfile:
+    path: /etc/elasticsearch/elasticsearch.yml
+    regexp: '^discovery.type'
+    line: 'discovery.type: single-node'
+  become: true
+
+- name: Deploy filebeat.yml
+  template:
+    src: filebeat.yml.j2
+    dest: /etc/filebeat/filebeat.yml
+  become: true
+
+- name: Enable + start services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - elasticsearch
+    - kibana
+    - filebeat
+  become: true
