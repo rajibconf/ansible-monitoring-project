@@ -1,0 +1,23 @@
+---
+- name: Create alertmanager config dir
+  file:
+    path: /etc/alertmanager
+    state: directory
+  become: true
+
+- name: Render alertmanager.yml
+  template:
+    src: alertmanager.yml.j2
+    dest: /etc/alertmanager/alertmanager.yml
+  become: true
+
+- name: Run Alertmanager container
+  community.docker.docker_container:
+    name: alertmanager
+    image: prom/alertmanager:latest
+    state: started
+    volumes:
+      - /etc/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    published_ports:
+      - "9093:9093"
+  become: true
