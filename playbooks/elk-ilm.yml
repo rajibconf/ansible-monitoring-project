@@ -1,0 +1,32 @@
+---
+- name: Bootstrap ILM policy
+  hosts: elk
+  vars:
+    elastic_url: "http://{{ inventory_hostname }}:9200"
+    ilm_policy: "logs-policy"
+  tasks:
+    - name: Check if ILM policy exists
+      uri:
+        url: "{{ elastic_url }}/_ilm/policy/{{ ilm_policy }}"
+        method: GET
+      register: ilm_check
+      failed_when: false
+
+    - name: Create ILM policy only if missing
+      uri:
+        url: "{{ elastic_url }}/_ilm/policy/{{ ilm_policy }}"
+        method: PUT
+        body_format: json
+        body:
+          policy:
+            phases:
+              hot:
+                actions:
+                  rollover:
+                    max_size: "50GB"
+              delete:
+                min_age: "30d"
+                actions:
+                  delete: {}
+        status_code: [200, 201]
+      when: ilm_check.status != 200

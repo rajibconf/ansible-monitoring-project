@@ -1,0 +1,21 @@
+---
+- name: Validate Prometheus
+  hosts: prometheus
+  tasks:
+    - name: Wait for ready endpoint
+      uri:
+        url: "http://localhost:9090/-/ready"
+        method: GET
+        status_code: 200
+      register: check
+      until: check.status == 200
+      retries: 6
+      delay: 5
+
+- name: Validate Grafana
+  hosts: grafana
+  tasks:
+    - name: Check health
+      uri:
+        url: "http://localhost:3000/api/health"
+        status_code: 200

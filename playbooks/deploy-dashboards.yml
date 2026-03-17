@@ -1,0 +1,27 @@
+---
+- name: Deploy Grafana dashboards
+  hosts: grafana
+  vars:
+    grafana_url: "http://localhost:3000"
+    # grafana_api_key: "{{ lookup('env','GRAFANA_API_KEY') }}"
+  tasks:
+    - name: Read dashboard JSON
+      slurp:
+        src: files/dashboards/sample-dashboard.json
+      register: dashboard_json
+      ignore_errors: true
+
+    - name: Push dashboard to Grafana
+      uri:
+        url: "{{ grafana_url }}/api/dashboards/db"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ grafana_api_key }}"
+          Content-Type: "application/json"
+        body: |
+          {
+            "dashboard": {{ (dashboard_json.content | b64decode) if dashboard_json.content is defined else "{}" }},
+            "overwrite": true
+          }
+        status_code: 200, 201
+      when: dashboard_json.content is defined
