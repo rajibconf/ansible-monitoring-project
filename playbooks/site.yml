@@ -1,0 +1,11 @@
+---
+- name: Provision Monitoring Stack
+  hosts: all
+  become: true
+  roles:
+    - { role: node-exporter, when: "'exporters' in group_names" }
+    - { role: prometheus, when: "'prometheus' in group_names" }
+    - { role: grafana, when: "'grafana' in group_names" }
+    - { role: elk, when: "'elk' in group_names" }
+    - { role: alertmanager, when: "'alertmanager' in group_names" }
+    - { role: datadog-agent, when: "'datadog' in group_names" }
